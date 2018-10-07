@@ -24,9 +24,10 @@ import com.example.yarden.hotshot.Client.AskForWifi;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 import com.example.yarden.hotshot.Provider.ShareWifi;
 import com.example.yarden.hotshot.R;
-import com.example.yarden.hotshot.SendReceive;
+import com.example.yarden.hotshot.Utils.SendReceive;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 import com.example.yarden.hotshot.Utils.User;
+import com.example.yarden.hotshot.Utils.WifiClientBroadcastReceiver;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,15 +37,22 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawer;
-    private WifiManager wifiManager;
-    private WifiP2pManager wifiP2pManager;
+    private Context mContext;
+
+   // P2P variables
+    private WifiP2pManager.Channel mChannel;
+    private WifiManager mWifiManager;
+    private WifiP2pManager mWifiP2pManager;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
-    private SendReceive sendReceive;
     private P2PWifi p2PWifi;
+
+    // Client/Server Variables
     private AskForWifi getWifi;
     private ShareWifi shareWifi;
     private FirebaseUser currectUser;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mContext = getApplicationContext();
+        initialPTPWork();
 
          drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -64,11 +74,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
-        startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(
-                Arrays.asList( new AuthUI.IdpConfig.EmailBuilder().build(),
-                        new AuthUI.IdpConfig.GoogleBuilder().build()))
-                .build() , 1);
-        currectUser = auth.getCurrentUser();
+        //startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(
+        //        Arrays.asList( new AuthUI.IdpConfig.EmailBuilder().build(),
+        //                new AuthUI.IdpConfig.GoogleBuilder().build()))
+        //        .build() , 1);
+        //currectUser = auth.getCurrentUser();
 
         if(savedInstanceState == null)
         {
@@ -80,7 +90,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
+    public P2PWifi getP2PWifi() {
+        return p2PWifi;
+    }
 
+    private void initialPTPWork(){
+
+        mWifiManager = (WifiManager) mContext.getSystemService(mContext.WIFI_SERVICE);
+        mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mWifiP2pManager.initialize(this,getMainLooper(),null);
+
+        mReceiver = new WifiClientBroadcastReceiver(mWifiP2pManager, mChannel,this);
+
+        p2PWifi = new P2PWifi(mContext, this, mWifiP2pManager, mChannel);
+
+        mIntentFilter=new IntentFilter();
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver,mIntentFilter);
+    }
 
     @Override
     public void onBackPressed() {
@@ -91,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
     }
-
 
     @Override
     public boolean onNavigationItemSelected(@Nullable MenuItem item) {
@@ -114,6 +154,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-
 }

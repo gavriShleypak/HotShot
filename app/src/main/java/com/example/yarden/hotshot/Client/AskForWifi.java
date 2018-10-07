@@ -55,21 +55,16 @@ public class AskForWifi {
             m_wifiManager.setWifiEnabled(true);
     }
 
-    public boolean GetWifi() {
-        boolean connect = false;
+    public void GetWifi() {
         try {
             enableWifi();
-            connect = p2pWifi.StartConnectionP2P();
-            if (connect)
-                SendAndConnect();
+            p2pWifi.StartDiscoveringP2P();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return connect;
     }
 
-
-    public void  SendAndConnect(){
+    public void  ParseInfoAndConnect(){
         try {
             p2pWifi.WriteMessege("Hi");
             String msg = p2pWifi.GetAnswerMsg();

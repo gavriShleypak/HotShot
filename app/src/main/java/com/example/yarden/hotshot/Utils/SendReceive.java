@@ -1,7 +1,10 @@
-package com.example.yarden.hotshot;
+package com.example.yarden.hotshot.Utils;
 
 
+import android.os.Handler;
 import android.widget.Toast;
+
+import com.example.yarden.hotshot.Utils.P2PWifi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,8 +44,6 @@ public class SendReceive extends Thread{
                 e.printStackTrace();
             }
         }
-
-
     }
 
     public void write(byte[] bytes)

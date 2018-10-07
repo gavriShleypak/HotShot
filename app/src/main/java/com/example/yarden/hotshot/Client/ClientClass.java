@@ -1,8 +1,8 @@
-package com.example.yarden.hotshot.Utils;
+package com.example.yarden.hotshot.Client;
 
 
 
-import com.example.yarden.hotshot.SendReceive;
+import com.example.yarden.hotshot.Utils.SendReceive;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -14,11 +14,11 @@ public class ClientClass extends Thread{
     String hostAdd;
     SendReceive sendReceive;
 
-    public  ClientClass(InetAddress hostAddress, SendReceive _sendRecive)
+    public  ClientClass(InetAddress hostAddress, SendReceive i_sendReceive)
     {
         hostAdd=hostAddress.getHostAddress();
         socket=new Socket();
-        sendReceive = _sendRecive;
+        sendReceive = i_sendReceive;
     }
 
     @Override

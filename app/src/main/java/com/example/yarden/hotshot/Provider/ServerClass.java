@@ -2,7 +2,7 @@ package com.example.yarden.hotshot.Provider;
 
 
 
-import com.example.yarden.hotshot.SendReceive;
+import com.example.yarden.hotshot.Utils.SendReceive;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,8 +13,9 @@ public class ServerClass extends Thread{
     ServerSocket serverSocket;
     SendReceive sendReceive;
 
-    public ServerClass(SendReceive _sendReceive){
-        sendReceive=_sendReceive;
+
+    public ServerClass(SendReceive i_sendReceive){
+        sendReceive = i_sendReceive;
     }
 
     @Override
@@ -22,8 +23,9 @@ public class ServerClass extends Thread{
         try {
             serverSocket=new ServerSocket(8888);
             socket=serverSocket.accept();
-            sendReceive=new SendReceive(socket);
+            sendReceive = new SendReceive(socket);
             sendReceive.start();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

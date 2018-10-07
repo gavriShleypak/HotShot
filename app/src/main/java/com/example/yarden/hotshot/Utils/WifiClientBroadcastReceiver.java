@@ -44,6 +44,7 @@ public class WifiClientBroadcastReceiver extends BroadcastReceiver {
             //do something
             if(mManager!=null)
             {
+                mManager.requestPeers(mChannel, mActivity.getP2PWifi().peerListListener);
             }
         }else if(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)){
             //do something
@@ -56,9 +57,9 @@ public class WifiClientBroadcastReceiver extends BroadcastReceiver {
 
             if(networkInfo.isConnected())
             {
-
+                mManager.requestConnectionInfo(mChannel,mActivity.getP2PWifi().connectionInfoListener);
             }else {
-
+                // notify the device disconnected.
             }
         }else if(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)){
             WifiP2pDevice myDevice =(WifiP2pDevice)intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
