@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -59,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         mContext = getApplicationContext();
         initialPTPWork();
 
@@ -88,19 +88,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-
-
     public P2PWifi getP2PWifi() {
         return p2PWifi;
     }
 
     private void initialPTPWork(){
 
-        mWifiManager = (WifiManager) mContext.getSystemService(mContext.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
         mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mWifiP2pManager.initialize(this,getMainLooper(),null);
-
-        mReceiver = new WifiClientBroadcastReceiver(mWifiP2pManager, mChannel,this);
 
         p2PWifi = new P2PWifi(mContext, this, mWifiP2pManager, mChannel);
 
@@ -120,7 +116,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver,mIntentFilter);
+        mReceiver = new WifiClientBroadcastReceiver(mWifiP2pManager, mChannel,this);
+        registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mWifiManager.setWifiEnabled(false);
     }
 
     @Override

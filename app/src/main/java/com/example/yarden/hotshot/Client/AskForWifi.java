@@ -55,14 +55,14 @@ public class AskForWifi {
             m_wifiManager.setWifiEnabled(true);
     }
 
-    public void GetWifi() {
-        try {
-            enableWifi();
-            p2pWifi.StartDiscoveringP2P();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    //public void GetWifi() {
+    //    try {
+    //        enableWifi();
+    //        p2pWifi.StartDiscoveringP2P();
+    //    } catch (Exception e) {
+    //        e.printStackTrace();
+    //    }
+    //}
 
     public void  ParseInfoAndConnect(){
         try {

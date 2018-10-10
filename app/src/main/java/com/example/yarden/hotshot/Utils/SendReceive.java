@@ -32,6 +32,11 @@ public class SendReceive extends Thread{
         byte[] buffer=new byte[1024];
         int bytes;
 
+        while(true){
+            if(handler != null)
+                break;
+        }
+
         while (socket!=null)
         {
             try {
@@ -44,6 +49,10 @@ public class SendReceive extends Thread{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 
     public void write(byte[] bytes)

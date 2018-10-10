@@ -7,15 +7,16 @@ import com.example.yarden.hotshot.Utils.SendReceive;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Handler;
 
 public class ServerClass extends Thread{
     Socket socket;
     ServerSocket serverSocket;
     SendReceive sendReceive;
+    private boolean isSendReciveNull = true;
 
-
-    public ServerClass(SendReceive i_sendReceive){
-        sendReceive = i_sendReceive;
+    public ServerClass(){
+      //  sendReceive = i_sendReceive;
     }
 
     @Override
@@ -25,9 +26,18 @@ public class ServerClass extends Thread{
             socket=serverSocket.accept();
             sendReceive = new SendReceive(socket);
             sendReceive.start();
+            isSendReciveNull = false;
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean IsSendReciveNull(){
+        return isSendReciveNull;
+    }
+
+    public SendReceive getSendReceive() {
+        return sendReceive;
     }
 }

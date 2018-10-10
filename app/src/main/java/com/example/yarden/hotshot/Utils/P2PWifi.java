@@ -15,7 +15,9 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.example.yarden.hotshot.Activitys.HomeFragment;
 import com.example.yarden.hotshot.Activitys.MainActivity;
+import com.example.yarden.hotshot.Client.AskForWifi;
 import com.example.yarden.hotshot.Client.ClientClass;
 import com.example.yarden.hotshot.Provider.ConnectionEstablishedInterface;
 import com.example.yarden.hotshot.Provider.PeersEventListener;
@@ -50,6 +52,10 @@ public class P2PWifi implements Serializable {
     private ArrayAdapter<String> mPeersAdapter;
     private ArrayList<PeersEventListener> peersEventListeners;
     private ArrayList<ConnectionEstablishedInterface> connectionEstablishedEventListeners;
+
+
+    // tmp param
+    boolean mIsClient = true;
 
     public P2PWifi(Context _context, MainActivity _activity, WifiP2pManager wifiP2pManager,
                    WifiP2pManager.Channel channel) {
@@ -99,21 +105,26 @@ public class P2PWifi implements Serializable {
         //mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
     }
 
-    public void StartDiscoveringP2P() throws InterruptedException {
+    public void StartDiscoveringP2P(boolean i_Isclient) {
 
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(context, "Searching", Toast.LENGTH_SHORT).show();
-                Log.d("Discovery started", "success");
-            }
+        mIsClient = i_Isclient;
+        try {
+            mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(context, "Searching", Toast.LENGTH_SHORT).show();
+                    Log.d("Discovery started", "success");
+                }
 
-            @Override
-            public void onFailure(int i) {
-                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
-                Log.d("Discovery Failed", "fail");
-            }
-        });
+                @Override
+                public void onFailure(int i) {
+                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
+                    Log.d("Discovery Failed", "fail");
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         // discover function only start to discover
         //    if(SerchForDevice()) {
@@ -141,25 +152,29 @@ public class P2PWifi implements Serializable {
         return answerMsg;
     }
 
-    public void connectToDevice(int i){
-        final WifiP2pDevice device=deviceArray[i];
-        WifiP2pConfig config=new WifiP2pConfig();
-        config.deviceAddress=device.deviceAddress;
+    public void connectToDevice(int i) {
+        final WifiP2pDevice device = deviceArray[i];
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        try {
+            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(context, "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+                }
 
-        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(context,"Connected to "+device.deviceName,Toast.LENGTH_SHORT).show();
-            }
+                @Override
+                public void onFailure(int i) {
+                    Toast.makeText(context, "Not Connected", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            @Override
-            public void onFailure(int i) {
-                Toast.makeText(context,"Not Connected",Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
-    Handler handler = new Handler(new Handler.Callback() {
+    Handler sendPassHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
@@ -167,6 +182,7 @@ public class P2PWifi implements Serializable {
                     byte[] readBuff = (byte[]) msg.obj;
                     answerMsg = new String(readBuff, 0, msg.arg1);
                     // send the data to Client
+
             }
             return true;
         }
@@ -199,29 +215,31 @@ public class P2PWifi implements Serializable {
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            if (!peerList.getDeviceList().equals(peers)) {
-                peers.clear();
-                peers.addAll(peerList.getDeviceList());
+            if (!mIsClient) {
+                if (!peerList.getDeviceList().equals(peers)) {
+                    peers.clear();
+                    peers.addAll(peerList.getDeviceList());
 
-                deviceNameArray = new String[peerList.getDeviceList().size()];
-                deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
-                int index = 0;
+                    deviceNameArray = new String[peerList.getDeviceList().size()];
+                    deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
+                    int index = 0;
 
-                for (WifiP2pDevice device : peerList.getDeviceList()) {
-                    deviceNameArray[index] = device.deviceName;
-                    deviceArray[index] = device;
-                    index++;
+                    for (WifiP2pDevice device : peerList.getDeviceList()) {
+                        deviceNameArray[index] = device.deviceName;
+                        deviceArray[index] = device;
+                        index++;
+                    }
+
+                    mPeersAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, deviceNameArray);
                 }
 
-                mPeersAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, deviceNameArray);
-            }
+                // if we have data notify listeners.
+                if (peers.size() == 0) {
+                    Toast.makeText(context, "No Device Found", Toast.LENGTH_SHORT).show();
 
-            // if we have data notify listeners.
-            if (peers.size() == 0) {
-                Toast.makeText(context, "No Device Found", Toast.LENGTH_SHORT).show();
-                return;
-            }else{
-                notifyAllPeersListeners();
+                } else {
+                    notifyAllPeersListeners();
+                }
             }
         }
     };
@@ -234,12 +252,29 @@ public class P2PWifi implements Serializable {
 
                     if(wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) // Host
                     {
-                        serverClass = new ServerClass(sendReceive);
+                        serverClass = new ServerClass();
                         serverClass.start();
+                        if (!mIsClient) {
+                            while (true) {
+                                if (!serverClass.IsSendReciveNull()) {
+                                    sendReceive = serverClass.getSendReceive();
+                                    sendReceive.setHandler(sendPassHandler);
+                                    notifyAllConnectionListeners();
+                                    break;
+                                }
+                            }
+                        }
                     } else if (wifiP2pInfo.groupFormed) // Client
                     {
-                        clientClass = new ClientClass(groupOwnerAddress, sendReceive);
+                        clientClass = new ClientClass(groupOwnerAddress);
                         clientClass.start();
+                        while (true) {
+                            if (!clientClass.IsSendReciveNull()) {
+                                sendReceive = clientClass.getSendReceive();
+                                sendReceive.setHandler(sendPassHandler);
+                                break;
+                            }
+                        }
                     }
                 }
             };

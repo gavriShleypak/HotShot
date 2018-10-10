@@ -1,11 +1,13 @@
 package com.example.yarden.hotshot.Activitys;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -13,14 +15,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.yarden.hotshot.Client.AskForWifi;
@@ -56,7 +62,13 @@ public class HomeFragment extends Fragment implements PeersEventListener {
     private FirebaseDatabase database ;
     private DatabaseReference myRef;
     private FragmentActivity myFRContext;
-   @Nullable
+    private boolean mIsClient;
+    private boolean mPermissionsGranted;
+
+    // constant
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+
+    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home , container , false);
@@ -77,6 +89,17 @@ public class HomeFragment extends Fragment implements PeersEventListener {
          myRef = database.getReference("message");
 
          p2PWifi = mainActivity.getP2PWifi();
+
+        ListView list = (ListView)getActivity().findViewById(R.id.fr_listvw);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+              try{  p2PWifi.connectToDevice(i);
+            }catch (Exception e){
+                  e.printStackTrace();
+              }
+            }
+        });
 
        /// try {
        /// wifiManager= (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -118,10 +141,13 @@ public class HomeFragment extends Fragment implements PeersEventListener {
 
         FloatingActionButton fab_getWifi = (FloatingActionButton) mainActivity.findViewById(R.id.fab_getWifi);
         fab_getWifi.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
+                mIsClient = true;
             try{
-                p2PWifi.StartDiscoveringP2P();
+                // here request permission
+               checkPermissionsAndAction();
             }
             catch (Exception e){
                     e.printStackTrace();
@@ -149,13 +175,15 @@ public class HomeFragment extends Fragment implements PeersEventListener {
         fab_shareWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mIsClient = false;
                 try {
-                    p2PWifi.StartDiscoveringP2P();
+                   checkPermissionsAndAction();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
+
         //fab_shareWifi.setOnClickListener(new View.OnClickListener() {
         //    @Override
         //    public void onClick(View view) {
@@ -192,9 +220,57 @@ public class HomeFragment extends Fragment implements PeersEventListener {
     @Override
     public void OnPeersAppearEvent(ArrayAdapter<String> adapter) {
 
-       PeersProviderFragment peerListFragment = new PeersProviderFragment();
-       mainActivity.getFragmentManager().beginTransaction()
-               .add(R.id.fragment_container,peerListFragment).commit();
+        ListView listV = (ListView) getActivity().findViewById(R.id.fr_listvw);
+        listV.setAdapter(p2PWifi.getmPeersAdapter());
 
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch(requestCode){
+            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:{
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    mPermissionsGranted = true;
+                    p2PWifi.StartDiscoveringP2P(mIsClient);
+
+                }else{
+                    mPermissionsGranted = false;
+                }
+            }
+        }
+    }
+
+    private boolean isPermissionsGranted(String[] permissions){
+
+        boolean res = true;
+        for(String permission : permissions){
+            if(ContextCompat.checkSelfPermission(mainActivity.getApplicationContext(),
+                    permission)!= PackageManager.PERMISSION_GRANTED){
+                res =false;
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    private void checkPermissionsAndAction(){
+        if(!isPermissionsGranted(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.INTERNET})){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(mainActivity,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)){
+                Toast.makeText(mainActivity.getApplicationContext(), "Need this permission to find nearby wifi", Toast.LENGTH_LONG).show();
+            }
+            ActivityCompat.requestPermissions(mainActivity, new String[]{
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_WIFI_STATE,
+                    Manifest.permission.CHANGE_WIFI_STATE,
+                    Manifest.permission.INTERNET},MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+        }else{
+            p2PWifi.StartDiscoveringP2P(mIsClient);
+        }
+    }
+
 }
