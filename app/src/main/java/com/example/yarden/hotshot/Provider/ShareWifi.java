@@ -8,12 +8,10 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 
-import com.example.yarden.hotshot.R;
+//import com.example.yarden.hotshot.Utils.SendReceive;
 import com.example.yarden.hotshot.Utils.P2PWifi;
-import com.example.yarden.hotshot.Utils.SendReceive;
 import com.example.yarden.hotshot.Utils.User;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -116,7 +114,7 @@ public class ShareWifi implements PeersEventListener, ConnectionEstablishedInter
     }
 
     @Override
-    public void SendInfo(SendReceive i_sendReceive) {
+    public void SendInfo(P2PWifi.SendReceive i_sendReceive) {
         p2pWifi.WriteMessege(HotSpotConnectionInfo());
 
         //or

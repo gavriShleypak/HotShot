@@ -1,17 +1,12 @@
 package com.example.yarden.hotshot.Activitys;
 
-import android.arch.lifecycle.HolderFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,22 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.example.yarden.hotshot.Client.AskForWifi;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 import com.example.yarden.hotshot.Provider.ShareWifi;
 import com.example.yarden.hotshot.R;
-import com.example.yarden.hotshot.Utils.SendReceive;
-import com.example.yarden.hotshot.Utils.P2PWifi;
-import com.example.yarden.hotshot.Utils.User;
 import com.example.yarden.hotshot.Utils.WifiClientBroadcastReceiver;
-import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawer;
@@ -118,11 +105,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         mReceiver = new WifiClientBroadcastReceiver(mWifiP2pManager, mChannel,this);
         registerReceiver(mReceiver, mIntentFilter);
+        mWifiManager.setWifiEnabled(true);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        mWifiP2pManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFailure(int i) {
+
+            }
+        });
         mWifiManager.setWifiEnabled(false);
     }
 

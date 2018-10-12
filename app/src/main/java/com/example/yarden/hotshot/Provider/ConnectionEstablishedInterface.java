@@ -1,6 +1,6 @@
 package com.example.yarden.hotshot.Provider;
 
-import com.example.yarden.hotshot.Utils.SendReceive;
+import com.example.yarden.hotshot.Utils.P2PWifi.SendReceive;
 
 public interface ConnectionEstablishedInterface {
 

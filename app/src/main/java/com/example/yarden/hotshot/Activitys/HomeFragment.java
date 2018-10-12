@@ -1,11 +1,7 @@
 package com.example.yarden.hotshot.Activitys;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
@@ -14,12 +10,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,11 +24,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.yarden.hotshot.Client.AskForWifi;
-import com.example.yarden.hotshot.Provider.ConnectionEstablishedInterface;
 import com.example.yarden.hotshot.Provider.PeersEventListener;
 import com.example.yarden.hotshot.Provider.ShareWifi;
 import com.example.yarden.hotshot.R;
-import com.example.yarden.hotshot.Utils.SendReceive;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 import com.example.yarden.hotshot.Utils.User;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,16 +36,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.InvocationTargetException;
-
-import static com.firebase.ui.auth.AuthUI.getApplicationContext;
-
-public class HomeFragment extends Fragment implements PeersEventListener {
+public class HomeFragment extends Fragment implements PeersEventListener{
     private WifiManager wifiManager;
     private WifiP2pManager wifiP2pManager;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
-    private SendReceive sendReceive;
     private P2PWifi p2PWifi;
     private AskForWifi getWifi;
     private ShareWifi shareWifi;
@@ -138,6 +125,7 @@ public class HomeFragment extends Fragment implements PeersEventListener {
         getWifi = new AskForWifi(p2PWifi , wifiManager );
         shareWifi = new ShareWifi(p2PWifi , wifiManager , user);
         shareWifi.setPeerEventListener(this);
+        p2PWifi.setClientReciveEventListeners(getWifi);
 
         FloatingActionButton fab_getWifi = (FloatingActionButton) mainActivity.findViewById(R.id.fab_getWifi);
         fab_getWifi.setOnClickListener(new View.OnClickListener() {
@@ -272,5 +260,4 @@ public class HomeFragment extends Fragment implements PeersEventListener {
             p2PWifi.StartDiscoveringP2P(mIsClient);
         }
     }
-
 }

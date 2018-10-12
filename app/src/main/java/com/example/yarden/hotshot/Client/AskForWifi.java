@@ -8,11 +8,12 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 
 import com.example.yarden.hotshot.Activitys.MainActivity;
+import com.example.yarden.hotshot.Provider.ClientReciveEventListener;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class AskForWifi {
+public class AskForWifi implements ClientReciveEventListener {
 
     private P2PWifi p2pWifi;
     private Context context;
@@ -22,6 +23,7 @@ public class AskForWifi {
     private WifiConfiguration m_wifiConf;
     private  String m_ssid;
     private String m_key;
+
 
     public AskForWifi(P2PWifi _p2pWifi, WifiManager wifiManager)
     {
@@ -79,4 +81,8 @@ public class AskForWifi {
 
     }
 
+    @Override
+    public void handelMessage(String msg) {
+        p2pWifi.WriteConfirmation("MassegeRecived!!!");
+    }
 }

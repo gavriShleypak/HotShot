@@ -1,13 +1,9 @@
 package com.example.yarden.hotshot.Activitys;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.example.yarden.hotshot.Provider.PeersEventListener;
 import com.example.yarden.hotshot.R;
 import com.example.yarden.hotshot.Utils.P2PWifi;
 
@@ -15,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class PeersProviderFragment extends Fragment {
@@ -38,7 +33,8 @@ public class PeersProviderFragment extends Fragment {
         mAvtivity = (MainActivity) getActivity();
         mP2PWifi = mAvtivity.getP2PWifi();
         mPeersList = (ListView) getActivity().findViewById(R.id.peers_fr_pr);
-        mPeersList.setAdapter(mP2PWifi.getmPeersAdapter());
+   //     mPeersList.setAdapter(mP2PWifi.getmPeersAdapter());
+        exqListener();
     }
 
     private void exqListener(){
