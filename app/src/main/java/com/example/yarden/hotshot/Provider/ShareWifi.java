@@ -29,16 +29,6 @@ public class ShareWifi implements PeersEventListener, ConnectionEstablishedInter
     private ArrayList<PeersEventListener> mPeersEventListeners;
     private ArrayAdapter<String> mPeersStringAdapter;
 
-    static {
-        // lookup methods and fields not defined publicly in the SDK.
-        Class<?> cls = WifiManager.class;
-        for (Method method : cls.getDeclaredMethods()) {
-            String methodName = method.getName();
-            if (methodName.equals("getWifiApState")) {
-                getWifiApState = method;
-            }
-        }
-    }
 
     public ShareWifi(P2PWifi _p2pWifi, WifiManager wifiManager, User _user)
     {
@@ -51,28 +41,6 @@ public class ShareWifi implements PeersEventListener, ConnectionEstablishedInter
         p2pWifi.setPeerEventListener(this);
         p2pWifi.setConnectionEstablishedEventListeners(this);
 
-
-    }
-
-    public boolean GetHotspotStatus() {
-          int AP_STATE_DISABLING = 10;
-          int AP_STATE_DISABLED = 11;
-          int AP_STATE_ENABLING = 12;
-          int AP_STATE_ENABLED = 13;
-          int AP_STATE_FAILED = 14;
-        int actualState = 0;
-
-
-        getWifiApState.setAccessible(true);
-        try {
-            actualState = (Integer) getWifiApState.invoke(m_wifiManager, (Object[]) null);
-            String str = "" + actualState;//just for debuging
-            Log.d("actualState", str); //just for debuging
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return actualState != AP_STATE_ENABLING &&  actualState != AP_STATE_ENABLED; // HotSpot Not available
 
     }
 
@@ -109,7 +77,7 @@ public class ShareWifi implements PeersEventListener, ConnectionEstablishedInter
         mPeersEventListeners.add(i_listener);
     }
 
-    private String HotSpotConnectionInfo(){
+    public String HotSpotConnectionInfo(){
         return "HT37--12345678";
     }
 

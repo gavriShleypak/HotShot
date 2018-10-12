@@ -74,6 +74,14 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_start_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start"
+            tools:layout_editor_absoluteX="262dp"
+            tools:layout_editor_absoluteY="444dp" />
         "/>
 
     </android.support.constraint.ConstraintLayout>

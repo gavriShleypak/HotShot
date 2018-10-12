@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -140,6 +141,14 @@ public class HomeFragment extends Fragment implements PeersEventListener{
             catch (Exception e){
                     e.printStackTrace();
                 }
+            }
+        });
+
+        Button start = (Button)mainActivity.findViewById(R.id.button_start_connection);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                p2PWifi.WriteMessege(shareWifi.HotSpotConnectionInfo());
             }
         });
 

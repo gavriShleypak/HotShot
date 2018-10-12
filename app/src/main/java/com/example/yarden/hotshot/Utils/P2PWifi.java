@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
@@ -122,6 +123,18 @@ public class P2PWifi implements Serializable {
         }
         config.deviceAddress = device.deviceAddress;
         try {
+            mManager.createGroup(mChannel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(context, "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(int i) {
+                    Toast.makeText(context, "Not Connected", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -136,8 +149,8 @@ public class P2PWifi implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
 
     // Handlers
 
@@ -232,12 +245,13 @@ public class P2PWifi implements Serializable {
                 @Override
                 public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
                     final InetAddress groupOwnerAddress = wifiP2pInfo.groupOwnerAddress;
-
                     if(wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) // Host
                     {
                         serverClass = new ServerClass();
                         serverClass.start();
 
+
+                        //    notifyAllConnectionListeners();
                         /// if (!mIsClient) {
                         ///     while (true) {
                         ///         if (!serverClass.IsSendReciveNull()) {
@@ -280,6 +294,7 @@ public class P2PWifi implements Serializable {
                 socket=serverSocket.accept();
                 sendReceive = new SendReceive(socket);
                 sendReceive.start();
+
                 isSendReciveNull = false;
 
             } catch (IOException e) {
@@ -334,7 +349,7 @@ public class P2PWifi implements Serializable {
         private InputStream inputStream;
         private OutputStream outputStream;
 
-        private int messageType;
+        private int messageType = P2PWifi.MESSAGE_READ;
 
 
         public SendReceive(Socket skt)
@@ -355,6 +370,7 @@ public class P2PWifi implements Serializable {
 
             if (!mIsClient) {
                 notifyAllConnectionListeners();
+                messageType = P2PWifi.CONFIRM_MESSAGE;
             }
 
             while (socket != null) {
